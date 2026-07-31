@@ -1,0 +1,25 @@
+import uuid
+
+from fastapi import APIRouter, Depends
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from api.core.database import get_db
+from api.schemas.flights import FlightDetailOut, FlightSearchRequest, FlightSearchResult
+from api.services import search_service
+
+router = APIRouter(tags=["flights"])
+
+
+@router.post("/search/flights", response_model=list[FlightSearchResult])
+async def search_flights(payload: FlightSearchRequest, db: AsyncSession = Depends(get_db)):
+    return await search_service.search_flights(
+        db,
+        origin=payload.origin.upper(),
+        destination=payload.destination.upper(),
+        departure_date=payload.departure_date,
+    )
+
+
+@router.get("/flights/{flight_instance_id}", response_model=FlightDetailOut)
+async def get_flight(flight_instance_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
+    return await search_service.get_flight_detail(db, flight_instance_id)
