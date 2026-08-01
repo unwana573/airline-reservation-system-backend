@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from api.core.config import get_settings
 from api.core.init_db import create_tables
-from api.routers import auth
+from api.routers import auth, seatmaps
 from api.routers import flights
 import asyncio
 
@@ -43,6 +43,7 @@ app.add_middleware(
 
 app.include_router(auth.router, prefix=settings.api_v1_prefix)
 app.include_router(flights.router, prefix=settings.api_v1_prefix)
+app.include_router(seatmaps.router, prefix=settings.api_v1_prefix)
 
 
 @app.get("/health", tags=["health"])

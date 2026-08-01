@@ -75,22 +75,6 @@ class SavedPassenger(Base):
 
     user: Mapped["User"] = relationship(back_populates="saved_passengers") 
 
-# class FlightSearch(Base):
-#     __tablename__ = "flight_searches"
-
-#     id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-#     user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"), nullable=False)
-#     airport: Mapped[str] = mapped_column(String, nullable=False)
-#     airline: Mapped[str] = mapped_column(String, nullable=False)
-#     aircraft_type: Mapped[str] = mapped_column(String, nullable=False)
-#     route: Mapped[str] = mapped_column(String, nullable=False)
-#     flightschedule: Mapped[str] = mapped_column(String, nullable=False)
-#     flightinstance: Mapped[str] = mapped_column(String, nullable=False)
-#     fareclass: Mapped[str] = mapped_column(String, nullable=False)
-#     flightfare: Mapped[str] = mapped_column(String, nullable=False)
-
-#     user: Mapped["User"] = relationship(back_populates="flight_searches")
-
 class Route(Base):
     __tablename__ = "routes"
 
@@ -163,3 +147,15 @@ class FlightFare(Base):
     base_price: Mapped[float] = mapped_column(Numeric(12, 2), nullable=False)
     currency: Mapped[str] = mapped_column(String(3), default="NGN")
     seats_available: Mapped[int] = mapped_column(Integer, nullable=False)
+
+class Seat(Base):
+    __tablename__ = "seats"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    flight_instance_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("flight_instances.id"), nullable=False)
+    seat_number: Mapped[str] = mapped_column(String, nullable=False)
+    cabin_class: Mapped[str] = mapped_column(String, nullable=False)
+    status: Mapped[bool] = mapped_column(Boolean, default=True)
+    held_until: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+
