@@ -1,16 +1,14 @@
 from contextlib import asynccontextmanager
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
 from api.core.config import get_settings
 from api.core.init_db import create_tables
-from api.routers import auth, seatmaps
+from api.routers import auth, content, seatmaps
 from api.routers import flights
 import asyncio
-
 from api.core.database import Base, engine
-from api import models  # noqa: F401 — imported so its tables register on Base.metadata
+from api.routers import payments
+from api import models
 
 settings = get_settings()
 
@@ -44,7 +42,8 @@ app.add_middleware(
 app.include_router(auth.router, prefix=settings.api_v1_prefix)
 app.include_router(flights.router, prefix=settings.api_v1_prefix)
 app.include_router(seatmaps.router, prefix=settings.api_v1_prefix)
-
+app.include_router(payments.router, prefix=settings.api_v1_prefix)
+app.include_router(content.router, prefix=settings.api_v1_prefix)
 
 @app.get("/health", tags=["health"])
 async def health_check():

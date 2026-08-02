@@ -158,4 +158,92 @@ class Seat(Base):
     status: Mapped[bool] = mapped_column(Boolean, default=True)
     held_until: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
+class Payment(Base):
+    __tablename__ = "payments"
 
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    booking_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("bookings.id"), nullable=False)
+    provider: Mapped[str] = mapped_column(String, nullable=False)
+    provider_reference: Mapped[str] = mapped_column(String, unique=True, nullable=False, index=True)
+    amount: Mapped[float] = mapped_column(Numeric(12, 2), nullable=False)
+    currency: Mapped[str] = mapped_column(String(3), default="NGN")
+    status: Mapped[str] = mapped_column(String, default="pending")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+class Booking(Base):
+    __tablename__ = "bookings"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    pnr: Mapped[str] = mapped_column(String(6), unique=True, nullable=False, index=True)
+    user_id: Mapped[uuid.UUID | None] = mapped_column(ForeignKey("users.id"), nullable=True)
+    guest_email: Mapped[str | None] = mapped_column(String, nullable=True)
+    guest_phone: Mapped[str | None] = mapped_column(String, nullable=True)
+    trip_type: Mapped[str] = mapped_column(String, nullable=False)
+    status: Mapped[str] = mapped_column(String, default="pending")
+    total_amount: Mapped[float] = mapped_column(Numeric(12, 2), nullable=False)
+    currency: Mapped[str] = mapped_column(String(3), default="NGN")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    segments: Mapped[list["BookingSegment"]] = relationship(back_populates="booking", cascade="all, delete-orphan")
+    passengers: Mapped[list["BookingPassenger"]] = relationship(back_populates="booking", cascade="all, delete-orphan")
+
+
+class BookingSegment(Base):
+    __tablename__ = "booking_segments"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    booking_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("bookings.id"), nullable=False)
+    flight_instance_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("flight_instances.id"), nullable=False)
+    fare_class_id: Mapped[int] = mapped_column(ForeignKey("fare_classes.id"), nullable=False)
+    sequence: Mapped[int] = mapped_column(Integer, nullable=False)
+
+    booking: Mapped["Booking"] = relationship(back_populates="segments")
+
+
+class BookingPassenger(Base):
+    __tablename__ = "booking_passengers"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    booking_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("bookings.id"), nullable=False)
+    title: Mapped[str | None] = mapped_column(String, nullable=True)
+    first_name: Mapped[str] = mapped_column(String, nullable=False)
+    last_name: Mapped[str] = mapped_column(String, nullable=False)
+    dob: Mapped[date | None] = mapped_column(Date, nullable=True)
+    passenger_type: Mapped[str] = mapped_column(String, nullable=False)
+    nationality: Mapped[str | None] = mapped_column(String, nullable=True)
+    passport_number: Mapped[str | None] = mapped_column(String, nullable=True)
+    passport_expiry: Mapped[date | None] = mapped_column(Date, nullable=True)
+    frequent_flyer_number: Mapped[str | None] = mapped_column(String, nullable=True)
+    special_assistance: Mapped[str | None] = mapped_column(String, nullable=True)
+
+    booking: Mapped["Booking"] = relationship(back_populates="passengers")
+
+class FeaturedDestination(Base):
+    __tablename__ = "featured_destinations"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    airport_id: Mapped[int] = mapped_column(ForeignKey("airports.id"), nullable=False)
+    badge: Mapped[str | None] = mapped_column(String, nullable=True)
+    image_url: Mapped[str | None] = mapped_column(String, nullable=True)
+    display_order: Mapped[int] = mapped_column(Integer, default=0)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+
+
+class Deal(Base):
+    __tablename__ = "deals"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    title: Mapped[str] = mapped_column(String, nullable=False)
+    subtitle: Mapped[str] = mapped_column(String, nullable=False)
+    badge: Mapped[str | None] = mapped_column(String, nullable=True)
+    promo_code: Mapped[str | None] = mapped_column(String, nullable=True)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    display_order: Mapped[int] = mapped_column(Integer, default=0)
+    valid_from: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    valid_to: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+
+class NewsletterSubscriber(Base):
+    __tablename__ = "newsletter_subscribers"
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    email: Mapped[str] = mapped_column(String, unique=True, nullable=False, index=True)
+    subscribed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
