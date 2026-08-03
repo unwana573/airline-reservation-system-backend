@@ -15,6 +15,7 @@ if not settings.database_url.startswith("sqlite"):
 
 engine = create_async_engine(settings.database_url, **_engine_kwargs)
 
+
 AsyncSessionLocal = async_sessionmaker(
     bind=engine,
     class_=AsyncSession,
