@@ -34,4 +34,6 @@ class Settings(BaseSettings):
 
 @lru_cache
 def get_settings() -> Settings:
-    return Settings()
+    settings = Settings()
+    print("DATABASE URL:", repr(settings.database_url))
+    return settings
