@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from api.core.config import get_settings
-from api.routers import booking, content, flights, payment, seatmaps
+from api.routers import booking, content, flights,  payments, seatmaps
 
 settings = get_settings()
 
@@ -38,10 +38,13 @@ app.add_middleware(
 app.include_router(flights.router, prefix=settings.api_v1_prefix)
 app.include_router(seatmaps.router, prefix=settings.api_v1_prefix)
 app.include_router(booking.router, prefix=settings.api_v1_prefix)
-app.include_router(payment.router, prefix=settings.api_v1_prefix)
+app.include_router(payments.router, prefix=settings.api_v1_prefix)
 app.include_router(content.router, prefix=settings.api_v1_prefix)
 
 
 @app.get("/health", tags=["health"])
 async def health_check():
     return {"status": "ok", "environment": settings.environment}
+
+# uvicorn app.main:app --host
+
