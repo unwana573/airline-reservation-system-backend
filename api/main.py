@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from api.core.config import get_settings
-from api.routers import booking, content, flights,  payments, seatmaps
+from api.routers import booking, content, flights,  payments, seatmaps, auth
 
 settings = get_settings()
 
@@ -35,6 +35,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(auth.router, prefix=settings.api_v1_prefix)
 app.include_router(flights.router, prefix=settings.api_v1_prefix)
 app.include_router(seatmaps.router, prefix=settings.api_v1_prefix)
 app.include_router(booking.router, prefix=settings.api_v1_prefix)
