@@ -4,14 +4,14 @@ from pydantic import BaseModel, EmailStr, Field, field_validator, model_validato
 
 
 class UserRegister(BaseModel):
-    title: str | None = None                 # Mr / Mrs / Ms / Dr / — (optional)
-    first_name: str = Field(min_length=1)     # as on passport
-    last_name: str = Field(min_length=1)      # as on passport
+    title: str | None = None
+    first_name: str = Field(min_length=1)
+    last_name: str = Field(min_length=1)
     email: EmailStr
     password: str = Field(min_length=8)
     confirm_password: str
-    accept_terms: bool                        # "I accept the Conditions of Carriage, Privacy Policy and confirm I am 18+"
-    marketing_opt_in: bool = False             # "Send me exclusive fare deals..." (optional)
+    accept_terms: bool
+    marketing_opt_in: bool = False
 
     @field_validator("accept_terms")
     @classmethod
@@ -30,7 +30,7 @@ class UserRegister(BaseModel):
 class UserLogin(BaseModel):
     email: EmailStr
     password: str
-    remember_me: bool = False   # "Keep me signed in on this device" — extends refresh token lifetime
+    remember_me: bool = False
 
 
 class TokenPair(BaseModel):
@@ -53,7 +53,7 @@ class ResetPasswordRequest(BaseModel):
 
 
 class GoogleOAuthRequest(BaseModel):
-    id_token: str   # the credential returned by Google Identity Services on the frontend
+    id_token: str
 
 
 class UserOut(BaseModel):

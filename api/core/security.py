@@ -9,19 +9,14 @@ from api.core.config import get_settings
 settings = get_settings()
 
 
-# ── Password hashing (bcrypt directly — no passlib, avoids the 3.13 incompatibility) ──
-
 def hash_password(plain_password: str) -> str:
     salt = bcrypt.gensalt()
-    hashed = bcrypt.hashpw(plain_password.encode("utf-8"), salt)
-    return hashed.decode("utf-8")
+    return bcrypt.hashpw(plain_password.encode("utf-8"), salt).decode("utf-8")
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     return bcrypt.checkpw(plain_password.encode("utf-8"), hashed_password.encode("utf-8"))
 
-
-# ── JWT access / refresh tokens ──
 
 def create_access_token(subject: str, extra_claims: dict[str, Any] | None = None) -> str:
     expire = datetime.now(timezone.utc) + timedelta(minutes=settings.access_token_expire_minutes)
@@ -39,11 +34,8 @@ def create_refresh_token(subject: str, expire_days: int | None = None) -> str:
 
 
 def decode_token(token: str) -> dict[str, Any]:
-    """Raises jwt.ExpiredSignatureError or jwt.InvalidTokenError on failure."""
     return jwt.decode(token, settings.jwt_secret_key, algorithms=[settings.jwt_algorithm])
 
-
-# ── Password reset tokens (short-lived, single-purpose) ──
 
 def create_password_reset_token(user_id: str) -> str:
     expire = datetime.now(timezone.utc) + timedelta(minutes=30)
@@ -52,7 +44,6 @@ def create_password_reset_token(user_id: str) -> str:
 
 
 def decode_password_reset_token(token: str) -> str:
-    """Returns the user_id if valid. Raises jwt exceptions on failure."""
     payload = jwt.decode(token, settings.jwt_secret_key, algorithms=[settings.jwt_algorithm])
     if payload.get("type") != "password_reset":
         raise jwt.InvalidTokenError("Not a password reset token")

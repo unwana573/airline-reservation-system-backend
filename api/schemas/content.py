@@ -32,6 +32,16 @@ class AirlineOut(BaseModel):
     model_config = {"from_attributes": True}
 
 
+class AirportSearchOut(BaseModel):
+    id: int
+    iata_code: str
+    name: str
+    city: str
+    country: str
+
+    model_config = {"from_attributes": True}
+
+
 class NewsletterSubscribeRequest(BaseModel):
     email: EmailStr
 

@@ -1,8 +1,8 @@
 """init full schema
 
-Revision ID: 8406ed51d10f
+Revision ID: 52506df432ac
 Revises: 
-Create Date: 2026-08-03 11:07:46.765693
+Create Date: 2026-08-06 10:22:31.389605
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '8406ed51d10f'
+revision: str = '52506df432ac'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -76,7 +76,11 @@ def upgrade() -> None:
     sa.Column('title', sa.String(), nullable=True),
     sa.Column('first_name', sa.String(), nullable=False),
     sa.Column('last_name', sa.String(), nullable=False),
+    sa.Column('is_email_verified', sa.Boolean(), nullable=False),
     sa.Column('role', sa.String(), nullable=False),
+    sa.Column('loyalty_tier', sa.String(), nullable=False),
+    sa.Column('loyalty_miles', sa.Integer(), nullable=False),
+    sa.Column('marketing_opt_in', sa.Boolean(), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=False),
     sa.PrimaryKeyConstraint('id')
     )
@@ -104,7 +108,19 @@ def upgrade() -> None:
     sa.Column('image_url', sa.String(), nullable=True),
     sa.Column('display_order', sa.Integer(), nullable=False),
     sa.Column('is_active', sa.Boolean(), nullable=False),
+    sa.Column('description', sa.String(), nullable=True),
+    sa.Column('best_time_to_visit', sa.String(), nullable=True),
+    sa.Column('popular_attractions', sa.String(), nullable=True),
+    sa.Column('travel_requirements', sa.String(), nullable=True),
     sa.ForeignKeyConstraint(['airport_id'], ['airports.id'], ),
+    sa.PrimaryKeyConstraint('id')
+    )
+    op.create_table('oauth_accounts',
+    sa.Column('id', sa.UUID(), nullable=False),
+    sa.Column('user_id', sa.UUID(), nullable=False),
+    sa.Column('provider', sa.String(), nullable=False),
+    sa.Column('provider_user_id', sa.String(), nullable=False),
+    sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('routes',
@@ -229,6 +245,7 @@ def downgrade() -> None:
     op.drop_table('flight_schedules')
     op.drop_table('booking_passengers')
     op.drop_table('routes')
+    op.drop_table('oauth_accounts')
     op.drop_table('featured_destinations')
     op.drop_index(op.f('ix_bookings_pnr'), table_name='bookings')
     op.drop_table('bookings')

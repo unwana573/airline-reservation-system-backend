@@ -18,6 +18,8 @@ class Settings(BaseSettings):
 
     cors_origins: str = "http://localhost:3000"
 
+    google_client_id: str | None = None
+
     paystack_secret_key: str | None = None
     paystack_public_key: str | None = None
     paystack_webhook_secret: str | None = None
@@ -34,6 +36,4 @@ class Settings(BaseSettings):
 
 @lru_cache
 def get_settings() -> Settings:
-    settings = Settings()
-    print("DATABASE URL:", repr(settings.database_url))
-    return settings
+    return Settings()

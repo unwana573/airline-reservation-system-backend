@@ -46,13 +46,10 @@ async def update_password(db: AsyncSession, user: User, new_password_hash: str) 
     return user
 
 
-# ── OAuth ──
-
 async def get_oauth_account(db: AsyncSession, provider: str, provider_user_id: str) -> OAuthAccount | None:
     result = await db.execute(
         select(OAuthAccount).where(
-            OAuthAccount.provider == provider,
-            OAuthAccount.provider_user_id == provider_user_id,
+            OAuthAccount.provider == provider, OAuthAccount.provider_user_id == provider_user_id
         )
     )
     return result.scalar_one_or_none()

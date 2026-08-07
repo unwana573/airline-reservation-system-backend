@@ -28,7 +28,7 @@ async def register_user(db: AsyncSession, payload: UserRegister) -> User:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email already registered")
 
     password_hash = hash_password(payload.password)
-    user = await auth_repository.create_user(
+    return await auth_repository.create_user(
         db,
         email=payload.email,
         first_name=payload.first_name,
@@ -37,7 +37,6 @@ async def register_user(db: AsyncSession, payload: UserRegister) -> User:
         title=payload.title,
         marketing_opt_in=payload.marketing_opt_in,
     )
-    return user
 
 
 async def authenticate_user(db: AsyncSession, payload: UserLogin) -> User:
@@ -49,8 +48,6 @@ async def authenticate_user(db: AsyncSession, payload: UserLogin) -> User:
 
 def issue_token_pair(user: User, remember_me: bool = False) -> TokenPair:
     access = create_access_token(subject=str(user.id), extra_claims={"role": user.role})
-    # "Keep me signed in on this device" → longer-lived refresh token.
-    # Without it, the refresh token still works but expires sooner (session-like behavior).
     refresh_days = settings.refresh_token_expire_days if remember_me else 1
     refresh = create_refresh_token(subject=str(user.id), expire_days=refresh_days)
     return TokenPair(access_token=access, refresh_token=refresh)
@@ -73,11 +70,6 @@ async def refresh_access_token(db: AsyncSession, refresh_token: str) -> TokenPai
 
 
 async def request_password_reset(db: AsyncSession, email: str) -> str | None:
-    """Returns the reset token if the user exists, else None.
-
-    Always return a generic success message to the caller regardless of the
-    result — never reveal whether an email is registered (enumeration risk).
-    """
     user = await auth_repository.get_user_by_email(db, email)
     if not user:
         return None
@@ -94,11 +86,8 @@ async def reset_password(db: AsyncSession, token: str, new_password: str) -> Non
     if not user:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User no longer exists")
 
-    new_hash = hash_password(new_password)
-    await auth_repository.update_password(db, user, new_hash)
+    await auth_repository.update_password(db, user, hash_password(new_password))
 
-
-# ── Google OAuth ("Continue with Google") ──
 
 async def authenticate_with_google(db: AsyncSession, google_id_token_str: str) -> User:
     if not settings.google_client_id:
@@ -125,7 +114,6 @@ async def authenticate_with_google(db: AsyncSession, google_id_token_str: str) -
         if user:
             return user
 
-    # No existing OAuth link — attach to a matching email account, or create a new one.
     user = await auth_repository.get_user_by_email(db, email)
     if not user:
         user = await auth_repository.create_user(
@@ -133,7 +121,7 @@ async def authenticate_with_google(db: AsyncSession, google_id_token_str: str) -
             email=email,
             first_name=claims.get("given_name", ""),
             last_name=claims.get("family_name", ""),
-            password_hash=None,  # OAuth-only account, no local password
+            password_hash=None,
         )
 
     await auth_repository.link_oauth_account(db, user, "google", google_user_id)

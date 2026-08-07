@@ -10,11 +10,8 @@ from api.core.security import decode_token
 from api.models import User
 from api.repositories import auth_repository
 
-# tokenUrl points Swagger's "Authorize" popup at the form-based /token endpoint.
-# It shows a username + password field there, submits them to /auth/token,
-# and Swagger stores whatever access_token comes back for use on other requests.
-# The app's real frontend should keep using the JSON /auth/login endpoint —
-# this OAuth2 flow exists only to power the Swagger UI login experience.
+# Powers the Swagger "Authorize" popup (email/password form). The app's real
+# frontend should use the JSON /auth/login endpoint instead.
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/v1/auth/token")
 
 
